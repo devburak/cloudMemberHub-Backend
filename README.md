@@ -177,6 +177,9 @@ ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 
+# API keys for tenant management
+API_KEYS=your-admin-api-key
+
 # Logging
 LOG_LEVEL=info
 LOG_FILE=logs/app.log

@@ -2,6 +2,7 @@ const express = require('express');
 const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
 const memberRoutes = require('./member.routes');
+const tenantRoutes = require('./tenant.routes');
 const testRoutes = require('./test.routes');
 
 const router = express.Router();
@@ -18,6 +19,10 @@ const defaultRoutes = [
   {
     path: '/members',
     route: memberRoutes,
+  },
+  {
+    path: '/tenants',
+    route: tenantRoutes,
   },
   {
     path: '/test',
@@ -39,6 +44,7 @@ router.get('/', (req, res) => {
       auth: '/api/auth',
       users: '/api/users',
       members: '/api/members',
+      tenants: '/api/tenants',
       test: '/api/test',
     },
     testEndpoints: {
