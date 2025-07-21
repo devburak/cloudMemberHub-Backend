@@ -101,19 +101,37 @@ const memberSchema = createBaseSchema({
     memberNumber: {
       type: String,
       required: [true, 'Member number is required'],
-      unique: true,
       index: true,
     },
     type: {
       type: String,
-      enum: ['regular', 'premium', 'vip', 'corporate', 'student', 'senior'],
+      enum: [
+        // Genel üyelik türleri
+        'regular', 'honorary', 'founding', 'associate', 'temporary',
+        // Meslek odası türleri
+        'professional', 'candidate', 'retired', 'inactive_professional',
+        // Dernek türleri
+        'active', 'supporter', 'patron', 'life_member',
+        // Siyasi parti türleri
+        'party_member', 'sympathizer', 'youth_member', 'women_branch',
+        // NGO türleri
+        'volunteer', 'donor', 'beneficiary', 'advocate',
+        // Spor kulübü türleri
+        'athlete', 'coach', 'official', 'fan',
+        // Diğer
+        'corporate', 'student', 'senior', 'family', 'other'
+      ],
       default: 'regular',
       required: true,
     },
     status: {
       type: String,
-      enum: ['active', 'inactive', 'suspended', 'expired', 'pending'],
-      default: 'pending',
+      enum: [
+        'active', 'inactive', 'suspended', 'expelled', 'resigned', 
+        'deceased', 'transferred', 'pending_approval', 'probation',
+        'honorary_inactive', 'retired'
+      ],
+      default: 'pending_approval',
       required: true,
       index: true,
     },
@@ -122,18 +140,57 @@ const memberSchema = createBaseSchema({
       required: [true, 'Join date is required'],
       default: Date.now,
     },
-    expiryDate: {
-      type: Date,
-      required: [true, 'Expiry date is required'],
-    },
+    approvalDate: Date,
+    expiryDate: Date, // Bazı organizasyonlarda üyelik süresiz olabilir
     renewalDate: Date,
-    categories: [{
-      type: String,
-      enum: ['fitness', 'sports', 'social', 'business', 'academic', 'community'],
-    }],
+    
+    // Organizasyon türüne göre özel alanlar
+    professional: {
+      licenseNumber: String,
+      licenseDate: Date,
+      licenseExpiryDate: Date,
+      specializations: [String],
+      experienceYears: Number,
+      currentWorkplace: String,
+      workplaceAddress: String,
+    },
+    
+    political: {
+      partyCardNumber: String,
+      branchMembership: String,
+      positionsHeld: [{
+        position: String,
+        startDate: Date,
+        endDate: Date,
+        level: { type: String, enum: ['local', 'regional', 'national'] },
+      }],
+      votingRights: { type: Boolean, default: true },
+    },
+    
+    volunteer: {
+      skills: [String],
+      availableHours: Number,
+      preferredActivities: [String],
+      emergencyContact: {
+        name: String,
+        phone: String,
+        relationship: String,
+      },
+      backgroundCheck: {
+        completed: { type: Boolean, default: false },
+        completedDate: Date,
+        expiryDate: Date,
+      },
+    },
+    
+    categories: [String], // Organizasyon kendisi belirleyecek
     referredBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Member',
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
     },
   },
 
