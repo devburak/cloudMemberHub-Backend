@@ -8,7 +8,7 @@ const rateLimit = require('express-rate-limit');
 
 const connectDatabase = require('./config/database');
 const routes = require('./routes');
-const errorMiddleware = require('./middleware/error.middleware');
+const { globalErrorHandler } = require('./middleware/index');
 const logger = require('./utils/logger');
 
 // Multi-tenant imports
@@ -119,6 +119,6 @@ app.all('*', (req, res) => {
   });
 });
 
-app.use(errorMiddleware);
+app.use(globalErrorHandler);
 
 module.exports = app;

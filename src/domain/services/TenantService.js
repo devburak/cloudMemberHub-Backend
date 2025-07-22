@@ -4,7 +4,6 @@ const { AppError } = require('../../middleware/error.middleware');
 const Tenant = require('../../tenant/models/Tenant');
 const logger = require('../../utils/logger');
 
-@Injectable(['TenantRepository'])
 class TenantService extends IService {
   constructor(tenantRepository) {
     super();
@@ -384,4 +383,4 @@ class TenantService extends IService {
   }
 }
 
-module.exports = TenantService;
+module.exports = Injectable(['TenantRepository'])(TenantService);

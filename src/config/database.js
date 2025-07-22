@@ -3,7 +3,7 @@ const logger = require('../utils/logger');
 
 const connectDatabase = async () => {
   try {
-    const mongoUri = process.env.NODE_ENV === 'test' 
+    const mongoUri = process.env.NODE_ENV === 'development' 
       ? process.env.MONGODB_TEST_URI 
       : process.env.MONGODB_URI;
 
@@ -16,7 +16,6 @@ const connectDatabase = async () => {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
       bufferCommands: false,
-      bufferMaxEntries: 0,
     };
 
     mongoose.set('strictQuery', true);
@@ -50,6 +49,7 @@ const connectDatabase = async () => {
     });
 
   } catch (error) {
+    console.log(error)
     logger.error('MongoDB connection failed:', error.message);
     process.exit(1);
   }
