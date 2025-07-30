@@ -32,16 +32,29 @@ app.use(helmet({
 
 const corsOptions = {
   origin: (origin, callback) => {
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
+    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:4173'
+    ];
+    
+    // Allow requests with no origin (like mobile apps or Postman)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      logger.warn(`CORS: Origin ${origin} not allowed`);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With', 
+    'X-Tenant-ID',
+    'X-API-Key'
+  ],
 };
 
 app.use(cors(corsOptions));

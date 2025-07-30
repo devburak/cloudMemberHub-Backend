@@ -34,8 +34,8 @@ const authenticateToken = asyncHandler(async (req, res, next) => {
     const env = getEnvironment();
     const decoded = jwt.verify(token, env.jwt.secret);
     
-    // Find user by ID
-    const user = await User.findById(decoded.userId).select('-password');
+    // Find user by ID  
+    const user = await User.findById(decoded.id).select('-password');
     
     if (!user) {
       throw new AppError('User not found or token invalid', 401);
@@ -47,7 +47,7 @@ const authenticateToken = asyncHandler(async (req, res, next) => {
     }
 
     // Check if account is locked
-    if (user.isAccountLocked()) {
+    if (user.isLocked) {
       throw new AppError('Account is locked due to multiple failed login attempts', 423);
     }
 
@@ -59,7 +59,6 @@ const authenticateToken = asyncHandler(async (req, res, next) => {
     // Attach user to request
     req.user = user;
     req.userId = user._id;
-    req.tenantId = user.tenantId;
     
     logger.debug(`User authenticated: ${user.email} (${user._id})`);
     next();
@@ -97,7 +96,7 @@ const authenticateRefreshToken = asyncHandler(async (req, res, next) => {
     const decoded = jwt.verify(refreshToken, env.jwt.refreshSecret);
     
     // Find user and check if refresh token is still valid
-    const user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findById(decoded.id).select('-password');
     
     if (!user) {
       throw new AppError('User not found or refresh token invalid', 401);
@@ -112,7 +111,6 @@ const authenticateRefreshToken = asyncHandler(async (req, res, next) => {
     
     req.user = user;
     req.userId = user._id;
-    req.tenantId = user.tenantId;
     req.refreshToken = refreshToken;
     
     next();
@@ -148,29 +146,25 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
   if (!token) {
     req.user = null;
     req.userId = null;
-    req.tenantId = null;
     return next();
   }
 
   try {
     const env = getEnvironment();
     const decoded = jwt.verify(token, env.jwt.secret);
-    const user = await User.findById(decoded.userId).select('-password');
+    const user = await User.findById(decoded.id).select('-password');
     
-    if (user && user.isActive && !user.isAccountLocked()) {
+    if (user && user.isActive && !user.isLocked) {
       req.user = user;
       req.userId = user._id;
-      req.tenantId = user.tenantId;
     } else {
       req.user = null;
       req.userId = null;
-      req.tenantId = null;
     }
   } catch (error) {
     // Ignore token errors in optional auth
     req.user = null;
     req.userId = null;
-    req.tenantId = null;
   }
 
   next();
