@@ -1,6 +1,11 @@
 const express = require('express');
 const { asyncHandler } = require('../middleware/error.middleware');
 const { authenticateToken, requireAuth } = require('../middleware/auth.middleware');
+const {
+  requireRole,
+  requireTenantAdmin,
+  roles,
+} = require('../middleware/authorization.middleware');
 const UserController = require('../controllers/UserController');
 
 const router = express.Router();
@@ -9,22 +14,22 @@ const router = express.Router();
 router.use(authenticateToken);
 router.use(requireAuth);
 
-// User management routes (admin only routes would need additional middleware)
-router.get('/', UserController.getAll);
-router.post('/', UserController.create);
-router.get('/search', UserController.searchUsers);
+// User management routes
+router.get('/', requireRole(roles.ADMIN), UserController.getAll);
+router.post('/', requireRole(roles.ADMIN), UserController.create);
+router.get('/search', requireRole(roles.ADMIN), UserController.searchUsers);
 router.get('/profile', UserController.getProfile);
 router.put('/profile', UserController.updateProfile);
 router.post('/change-password', UserController.changePassword);
 
 // User-specific routes
-router.get('/:userId', UserController.getById);
-router.put('/:userId', UserController.update);
-router.delete('/:userId', UserController.delete);
-router.post('/:userId/activate', UserController.activate);
-router.post('/:userId/deactivate', UserController.deactivate);
-router.put('/:userId/role', UserController.updateRole);
-router.put('/:userId/permissions', UserController.updatePermissions);
+router.get('/:userId', requireRole(roles.ADMIN), UserController.getById);
+router.put('/:userId', requireTenantAdmin, UserController.update);
+router.delete('/:userId', requireTenantAdmin, UserController.delete);
+router.post('/:userId/activate', requireTenantAdmin, UserController.activate);
+router.post('/:userId/deactivate', requireTenantAdmin, UserController.deactivate);
+router.put('/:userId/role', requireTenantAdmin, UserController.updateRole);
+router.put('/:userId/permissions', requireTenantAdmin, UserController.updatePermissions);
 
 // Info route
 router.get('/info/endpoints', asyncHandler(async (req, res) => {
