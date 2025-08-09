@@ -3,43 +3,59 @@ const { container } = require('../../shared/container/ServiceContainer');
 // Infrastructure services
 const TenantAwareRepository = require('../database/TenantAwareRepository');
 
-// Domain services (will be created)
-// const UserService = require('../../domain/services/UserService');
-// const MemberService = require('../../domain/services/MemberService');
-// const TenantService = require('../../domain/services/TenantService');
+// Services
+const UserService = require('../../services/UserService');
+const AuthService = require('../../services/AuthService');
+const TenantService = require('../../domain/services/TenantService');
 
-// Application services (will be created)
-// const UserUseCase = require('../../application/useCases/UserUseCase');
-// const MemberUseCase = require('../../application/useCases/MemberUseCase');
-
-// Repositories (will be created)
-// const UserRepository = require('../../domain/repositories/UserRepository');
-// const MemberRepository = require('../../domain/repositories/MemberRepository');
+// Controllers
+const AuthController = require('../../controllers/AuthController');
+const UserController = require('../../controllers/UserController');
 
 // Register infrastructure services
 container.registerSingleton('TenantAwareRepository', TenantAwareRepository);
 
-// Register repositories when they are created
-// container.registerFactory('UserRepository', (container) => {
-//   return new UserRepository(UserModel);
-// });
+// Register repositories
+container.registerFactory('UserRepository', (container) => {
+  return container.get('TenantAwareRepository');
+});
 
-// container.registerFactory('MemberRepository', (container) => {
-//   return new MemberRepository(MemberModel);
-// });
+container.registerFactory('TenantRepository', (container) => {
+  return container.get('TenantAwareRepository');
+});
 
-// Register domain services when they are created
-// container.registerSingleton('UserService', UserService);
-// container.registerSingleton('MemberService', MemberService);
-// container.registerSingleton('TenantService', TenantService);
+// Register services
+container.registerFactory('UserService', (container) => {
+  const userRepository = container.get('UserRepository');
+  const tenantService = container.get('TenantService');
+  const userService = new UserService(userRepository, tenantService);
+  return userService;
+});
 
-// Register use cases when they are created
-// container.registerFactory('UserUseCase', (container) => {
-//   const userService = container.get('UserService');
-//   const userRepository = container.get('UserRepository');
-//   return new UserUseCase(userService, userRepository);
-// });
+container.registerFactory('AuthService', (container) => {
+  const userService = container.get('UserService');
+  const tenantService = container.get('TenantService');
+  const authService = new AuthService(userService, tenantService, null); // EmailService can be added later
+  return authService;
+});
 
-console.log('Service container initialized with registered services');
+container.registerFactory('TenantService', (container) => {
+  const tenantRepository = container.get('TenantRepository');
+  const tenantService = new TenantService(tenantRepository);
+  return tenantService;
+});
+
+// Initialize controllers with services
+try {
+  const authService = container.get('AuthService');
+  const userService = container.get('UserService');
+  
+  AuthController.setAuthService(authService);
+  UserController.setUserService(userService);
+  
+  console.log('Service container initialized with registered services and controllers');
+} catch (error) {
+  console.error('Error initializing service container:', error);
+}
 
 module.exports = container;
