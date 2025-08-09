@@ -14,7 +14,7 @@ class AuthService extends IService {
     this.userService = userService;
     this.tenantService = tenantService;
     this.emailService = emailService;
-    this.env = getEnvironment();
+    this.env = getEnvironment;
   }
 
   async register(userData, tenantId) {
